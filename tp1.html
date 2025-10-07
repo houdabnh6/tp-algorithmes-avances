@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TP1 - Arbres et Graphes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background: #f7f9fb;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 18px;
+      background: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    a.button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h1>TP1 : Arbres et Graphes</h1>
+  <p>Voici un extrait du code source utilisé pour générer un arbre :</p>
+
+  <pre>
+import networkx as nx
+import matplotlib.pyplot as plt
+
+#Classe BST
+class Node:
+    def __init__(self, key):
+        self.key = key
+        self.left = None
+        self.right = None
+
+#Insertion
+def insert(root, key):
+    if root is None:
+        return Node(key)
+    if key < root.key:
+        root.left = insert(root.left, key)
+    elif key > root.key:
+        root.right = insert(root.right, key)
+    return root
+
+#Trouver le minimum (utile pour suppression) 
+def find_min(node):
+    current = node
+    while current.left:
+        current = current.left
+    return current
+
+#Suppression 
+def delete(root, key):
+    if root is None:
+        return root
+
+    if key < root.key:
+        root.left = delete(root.left, key)
+    elif key > root.key:
+        root.right = delete(root.right, key)
+    else:
+        # Cas 1 : pas d’enfant
+        if root.left is None and root.right is None:
+            return None
+        # Cas 2 : un seul enfant
+        elif root.left is None:
+            return root.right
+        elif root.right is None:
+            return root.left
+        # Cas 3 : deux enfants
+        else:
+            temp = find_min(root.right)
+            root.key = temp.key
+            root.right = delete(root.right, temp.key)
+    return root
+
+#Parcours croissant
+def inorder(root):
+    return inorder(root.left) + [root.key] + inorder(root.right) if root else []
+
+#Ajout des arêtes pour affichage
+def add_edges(G, root):
+    if root:
+        if root.left:
+            G.add_edge(root.key, root.left.key)
+            add_edges(G, root.left)
+        if root.right:
+            G.add_edge(root.key, root.right.key)
+            add_edges(G, root.right)
+
+#Placement hiérarchique
+def hierarchy_pos(root, x=0, y=0, layer_gap=1, x_gap=2, pos=None, depth=0):
+    if pos is None:
+        pos = {}
+    pos[root.key] = (x, -depth)
+    if root.left:
+        pos = hierarchy_pos(root.left, x - x_gap/(2**depth), y, layer_gap, x_gap, pos, depth+1)
+    if root.right:
+        pos = hierarchy_pos(root.right, x + x_gap/(2**depth), y, layer_gap, x_gap, pos, depth+1)
+    return pos
+
+#Création de l'arbre initial
+values = [25, 60, 35, 10, 5, 20, 65, 45, 70, 40, 50, 55, 30, 15, 22, 62, 64, 4, 8]
+root = None
+for v in values:
+    root = insert(root, v)
+
+print("Arbre initial (inorder) :", inorder(root))
+
+#Copier l'arbre initial pour affichage
+import copy
+root_initial = copy.deepcopy(root)
+
+#Suppressions 
+root = delete(root, 15)   
+root = delete(root, 70)   
+root = delete(root, 50)   
+root = delete(root, 35)   
+root = delete(root, 60)   
+root = delete(root, 25)
+
+print("Arbre après suppressions (inorder) :", inorder(root))
+
+plt.figure(figsize=(18,10))
+
+#Arbre avant suppression
+G1 = nx.DiGraph()
+add_edges(G1, root_initial)
+pos1 = hierarchy_pos(root_initial)
+plt.subplot(1,2,1)
+nx.draw(G1, pos1, with_labels=True, node_size=1500, node_color="lightgreen", font_size=14, arrows=False)
+plt.title("Avant suppression")
+
+#Arbre après suppression
+G2 = nx.DiGraph()
+add_edges(G2, root)
+pos2 = hierarchy_pos(root)
+plt.subplot(1,2,2)
+nx.draw(G2, pos2, with_labels=True, node_size=1500, node_color="lightblue", font_size=14, arrows=False)
+plt.title("Après suppression")
+
+plt.show()
+def hauteur(node):
+    if node is None:
+        return -1   # arbre vide
+    else:
+        return 1 + max(hauteur(node.left), hauteur(node.right))
+ 
+print("Hauteur de l'arbre apres suppression =", hauteur(root))
+
+
+  </pre>
+
+ 
+  <a href="https://colab.research.google.com/drive/1-mJncqFFPzVl2UOK6x4cJMu7vOoz0ptC?usp=sharing" target="_blank" class="button">▶ Exécuter sur Colab</a>
+
+  <br><br>
+  <a href="index.html" class="button">⬅ Retour au menu</a>
+</body>
+</html>
